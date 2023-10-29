@@ -7,7 +7,6 @@ def main(page: ft.Page):
     page.title = 'Заявка в технический отдел OCG'
     page.theme = ft.theme.Theme(color_scheme_seed='blue')
     page.scroll = ft.ScrollMode.ADAPTIVE
-    ft.FilePickerUploadFile()
     
     url = 'http://ws_guest:@192.168.10.123/workbase/hs/it/'
 
@@ -100,4 +99,3 @@ def main(page: ft.Page):
 
 
 ft.app(target=main, port=8080, view=ft.AppView.WEB_BROWSER)
-#ft.app(target=main)
