@@ -9,6 +9,12 @@ def main(page: ft.Page):
     page.overlay.append(file_picker)
     url = 'http://ws_guest:@192.168.10.123/workbase/hs/it/'
 
+    try:
+        resp = requests.get(url + 'get_company')
+    except:
+        page.add(ft.Text("Не удалось установить соединение с сервером"))
+        return
+
     def on_company_change(e):
         drop_depart.options.clear()
         resp_dep = requests.get(url + 'get_department')
