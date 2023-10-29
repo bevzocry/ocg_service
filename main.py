@@ -1,19 +1,34 @@
 import flet as ft
 import requests
+import base64
 
 
 def main(page: ft.Page):
     page.title = 'Заявка в технический отдел OCG'
     page.theme = ft.theme.Theme(color_scheme_seed='blue')
-    file_picker = ft.FilePicker()
-    page.overlay.append(file_picker)
+    page.scroll = ft.ScrollMode.ADAPTIVE
+    ft.FilePickerUploadFile()
+    
     url = 'http://ws_guest:@192.168.10.123/workbase/hs/it/'
 
     try:
         resp = requests.get(url + 'get_company')
-    except:
-        page.add(ft.Text("Не удалось установить соединение с сервером"))
+    except Exception as ex:
+        page.add(ft.Text('Не удалось установить соединение с сервером - ' + type(ex).__name__))
         return
+
+    def on_dialog_result(e: ft.FilePickerResultEvent):
+        if e.files is not None:
+            for f in e.files:
+                if img.src_base64 == '':
+                    image = open(f.path, 'rb') #open binary file in read mode
+                    img.src_base64 = base64.b64encode(image.read()).decode('utf-8')
+                elif img1.src_base64 == '':
+                    image = open(f.path, 'rb')
+                    img1.src_base64 = base64.b64encode(image.read()).decode('utf-8')
+                else:
+                    break
+            page.update()
 
     def on_company_change(e):
         drop_depart.options.clear()
@@ -37,6 +52,9 @@ def main(page: ft.Page):
         else:
             phone_field.error_text = ""
         page.update()
+
+    file_picker = ft.FilePicker(on_result=on_dialog_result)
+    page.overlay.append(file_picker)
 
     # Заголовок
     cont_titl = ft.Row(controls=[ft.Text('Заявка в технический отдел', style=ft.TextThemeStyle.TITLE_LARGE)], alignment=ft.MainAxisAlignment.CENTER, height=50)
@@ -72,9 +90,14 @@ def main(page: ft.Page):
 
     # FilePicker
     file_button = ft.ElevatedButton("Прикрепить файлы",
-        on_click=lambda _: file_picker.pick_files(allow_multiple=True, allowed_extensions=['jpg']))
+        on_click=lambda _: file_picker.pick_files(allow_multiple=True, file_type=ft.FilePickerFileType.IMAGE), icon=ft.icons.UPLOAD_FILE)
+    
+    img = ft.Image(src_base64='', width=150)
+    img1 = ft.Image(src_base64='', width=150)
+    im_row = ft.Row(controls=[img, img1])
 
-    page.add(cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button)
+    page.add(cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button, im_row)
 
 
 ft.app(target=main, port=8080, view=ft.AppView.WEB_BROWSER)
+#ft.app(target=main)
