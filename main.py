@@ -1,9 +1,11 @@
 import flet as ft
 import requests
 import base64
+from typing import Dict
 
 
 def main(page: ft.Page):
+    prog_bars: Dict[str, ft.ProgressRing] = {}
     page.title = 'Заявка в технический отдел OCG'
     page.theme = ft.theme.Theme(color_scheme_seed='blue')
     page.scroll = ft.ScrollMode.ADAPTIVE
@@ -18,15 +20,18 @@ def main(page: ft.Page):
 
     def on_dialog_result(e: ft.FilePickerResultEvent):
         if e.files is not None:
-            for f in e.files:
-                if img.src_base64 == '':
-                    image = open(f.path, 'rb') #open binary file in read mode
-                    img.src_base64 = base64.b64encode(image.read()).decode('utf-8')
-                elif img1.src_base64 == '':
-                    image = open(f.path, 'rb')
-                    img1.src_base64 = base64.b64encode(image.read()).decode('utf-8')
-                else:
-                    break
+            if e.files[0].path is not None:
+                for f in e.files:
+                    if img.src_base64 == '':
+                        image = open(f.path, 'rb') #open binary file in read mode
+                        img.src_base64 = base64.b64encode(image.read()).decode('utf-8')
+                    elif img1.src_base64 == '':
+                        image = open(f.path, 'rb')
+                        img1.src_base64 = base64.b64encode(image.read()).decode('utf-8')
+                    else:
+                        break
+            else: # web
+                prog_bars.clear()
             page.update()
 
     def on_company_change(e):
