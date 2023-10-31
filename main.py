@@ -86,9 +86,8 @@ def main(page: ft.Page):
         page.update()
 
     def on_submit(e):
-        path = Path(Path.cwd(), uploads_dir)
         for f in upload_files():
-            image = open(str(path) + '\\' + f.name, 'rb') #open binary file in read mode
+            image = Path(Path.cwd(), uploads_dir, f.name).open('rb') #open binary file in read mode
             img_base64 = base64.b64encode(image.read()).decode('utf-8')
             page.add(ft.Text(img_base64))
         page.update()
