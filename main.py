@@ -86,11 +86,17 @@ def main(page: ft.Page):
         page.update()
 
     def on_submit(e):
-        for f in upload_files():
+        uf = upload_files()
+        for prog in prog_bars.values():
+            print(prog.value)
+
+        """
+        for f in uf:
             image = Path(Path(__file__).parent, uploads_dir, f.name).open('rb') #open binary file in read mode
             img_base64 = base64.b64encode(image.read()).decode('utf-8')
             page.add(ft.Text(img_base64))
         page.update()
+        """
 
     file_picker = ft.FilePicker(on_result=on_dialog_result, on_upload=on_upload_progress)
     page.overlay.append(file_picker)
