@@ -20,6 +20,9 @@ def main(page: ft.Page):
         page.add(ft.Text('Не удалось установить соединение с сервером - ' + type(ex).__name__))
         return
 
+    def delete_img(e):
+        print(type(e))
+
     def on_dialog_result(e: ft.FilePickerResultEvent):
         if e.files is not None:
             if e.files[0].path is not None:
@@ -40,9 +43,10 @@ def main(page: ft.Page):
                 for f in e.files:
                     prog = ft.ProgressRing(value=0, bgcolor="#eeeeee", width=20, height=20)
                     prog_bars[f.name] = prog
-                    im_col.controls.append(ft.Row([prog, ft.Text(f.name)]))
+                    im_col.controls.append(ft.Row([prog, ft.Text(f.name), ft.IconButton(icon=ft.icons.DELETE, icon_size=20, on_click=delete_img)]))
                 im_row.visible = False
                 im_col.visible = True
+                upload_files()
             page.update()
 
     def upload_files():
@@ -56,7 +60,6 @@ def main(page: ft.Page):
                     )
                 )
             file_picker.upload(uf)
-        return uf
         
     def on_upload_progress(e: ft.FilePickerUploadEvent):
         prog_bars[e.file_name].value = e.progress
@@ -86,9 +89,8 @@ def main(page: ft.Page):
         page.update()
 
     def on_submit(e):
-        uf = upload_files()
-        for prog in prog_bars.values():
-            print(prog.value)
+        for prog in prog_bars.items():
+            print(prog)
 
         """
         for f in uf:
