@@ -19,6 +19,10 @@ def main(page: ft.Page):
     except Exception as ex:
         page.add(ft.Text('Не удалось установить соединение с сервером - ' + type(ex).__name__))
         return
+    
+    def on_delete_image(e):
+        e.control.data.visible = False
+        page.update()
 
     def on_dialog_result(e: ft.FilePickerResultEvent):
         if e.files is not None:
@@ -40,7 +44,9 @@ def main(page: ft.Page):
                 for f in e.files:
                     prog = ft.ProgressRing(value=0, bgcolor="#eeeeee", width=20, height=20)
                     prog_bars[f.name] = prog
-                    im_col.controls.append(ft.Row([prog, ft.Text(f.name)]))
+                    n_row = ft.Row([prog, ft.Text(f.name)])
+                    n_row.controls.append(ft.IconButton(icon=ft.icons.DELETE_FOREVER, data=n_row, on_click=on_delete_image))
+                    im_col.controls.append(n_row)
                 im_row.visible = False
                 im_col.visible = True
                 upload_files()
@@ -86,16 +92,17 @@ def main(page: ft.Page):
         page.update()
 
     def on_submit(e):
-        for prog in prog_bars.items():
-            print(prog)
 
-        """
-        for f in uf:
-            image = Path(Path(__file__).parent, uploads_dir, f.name).open('rb') #open binary file in read mode
-            img_base64 = base64.b64encode(image.read()).decode('utf-8')
-            page.add(ft.Text(img_base64))
-        page.update()
-        """
+        # attached images
+        if im_col.controls:
+            for i_row in im_col.controls:
+                if i_row.visible:
+                    image = Path(Path(__file__).parent, uploads_dir, i_row.controls[1].value).open('rb') #open binary file in read mode
+                    img_base64 = base64.b64encode(image.read()).decode('utf-8')
+        else:
+            for i_row in im_row.controls:
+                img_base64 = img.src_base64
+                img_base64 = img1.src_base64
 
     file_picker = ft.FilePicker(on_result=on_dialog_result, on_upload=on_upload_progress)
     page.overlay.append(file_picker)
