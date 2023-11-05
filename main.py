@@ -1,6 +1,7 @@
 import flet as ft
 import requests
 import base64
+import json
 from pathlib import Path
 
 
@@ -92,17 +93,27 @@ def main(page: ft.Page):
         page.update()
 
     def on_submit(e):
-
+        sbmt = {}
+        sbmt['company'] = drop_company.value
+        sbmt['department'] = drop_depart.value
+        sbmt['subject'] = drop_subject.value
+        sbmt['phone'] = phone_field.value
+        sbmt['text'] = comment_field.value
         # attached images
         if im_col.controls:
             for i_row in im_col.controls:
                 if i_row.visible:
-                    image = Path(Path(__file__).parent, uploads_dir, i_row.controls[1].value).open('rb') #open binary file in read mode
-                    img_base64 = base64.b64encode(image.read()).decode('utf-8')
+                    if sbmt.get('photo', '') == '':
+                        image = Path(Path(__file__).parent, uploads_dir, i_row.controls[1].value).open('rb') #open binary file in read mode
+                        sbmt['photo'] = base64.b64encode(image.read()).decode('utf-8')
+                    elif sbmt.get('photo1', '') == '':
+                        image = Path(Path(__file__).parent, uploads_dir, i_row.controls[1].value).open('rb') #open binary file in read mode
+                        sbmt['photo1'] = base64.b64encode(image.read()).decode('utf-8')
         else:
-            for i_row in im_row.controls:
-                img_base64 = img.src_base64
-                img_base64 = img1.src_base64
+            sbmt['photo'] = img.src_base64
+            sbmt['photo1'] = img1.src_base64
+        resp_task = requests.post(url + 'create_task', data=json.dumps(sbmt))
+        page.add(ft.Text(resp_task))
 
     file_picker = ft.FilePicker(on_result=on_dialog_result, on_upload=on_upload_progress)
     page.overlay.append(file_picker)
