@@ -21,6 +21,9 @@ def main(page: ft.Page):
         page.add(ft.Text('Не удалось установить соединение с сервером - ' + type(ex).__name__))
         return
     
+    dlg = ft.AlertDialog()
+    page.dialog = dlg
+    
     def on_delete_image(e):
         e.control.data.visible = False
         page.update()
@@ -70,21 +73,32 @@ def main(page: ft.Page):
         prog_bars[e.file_name].update()
 
     def on_company_change(e):
+        drop_company.error_text = ''
         drop_depart.options.clear()
+        drop_depart.value = ''
         resp_dep = requests.get(url + 'get_department')
         if resp_dep.status_code == 200:
             for d in resp_dep.json():
                 if d['owner'] == drop_company.value:
                     drop_depart.options.append(ft.dropdown.Option(key=d['id'], text=d['name']))
-            page.update()
+        page.update()
+
+    def on_depart_change(e):
+        drop_depart.error_text = ''
+        page.update()
 
     def on_theme_change(e):
         drop_subject.options.clear()
+        drop_subject.value = ''
         for d in resp_theme.json():
             if d['parent'] == drop_theme.value:
                 drop_subject.options.append(ft.dropdown.Option(key=d['id'], text=d['name']))
         page.update()
 
+    def on_subject_change(e):
+        drop_subject.error_text = ''
+        page.update()
+        
     def on_phone_change(e):
         if not phone_field.value.isdigit():
             phone_field.error_text = "Неверный формат номера телефона"
@@ -92,13 +106,50 @@ def main(page: ft.Page):
             phone_field.error_text = ""
         page.update()
 
+    def open_dlg(resp):
+        dlg.title = ft.Text(resp.json()['message'])
+        dlg.open = True
+        drop_theme.value =''
+        drop_subject.value = ''
+        comment_field.value = ''
+        im_col.controls.clear()
+        img.src_base64 = ''
+        img1.src_base64 = ''
+        page.update()
+
     def on_submit(e):
         sbmt = {}
-        sbmt['company'] = drop_company.value
-        sbmt['department'] = drop_depart.value
-        sbmt['subject'] = drop_subject.value
-        sbmt['phone'] = phone_field.value
+
+        if drop_company.value:
+            sbmt['company'] = drop_company.value
+        else:
+            drop_company.error_text = 'Не заполнена организация'
+            page.update()
+            return
+        
+        if drop_depart.value:
+            sbmt['department'] = drop_depart.value
+        else:
+            drop_depart.error_text = 'Не заполнено подразделение'
+            page.update()
+            return
+        
+        if drop_subject.value:
+            sbmt['subject'] = drop_subject.value
+        else:
+            drop_subject.error_text = 'Не заполнено уточнение'
+            page.update()
+            return
+        
+        if phone_field.value:
+            sbmt['phone'] = phone_field.value
+        else:
+            phone_field.error_text = 'Не заполнен номер телефона'
+            page.update()
+            return
+        
         sbmt['text'] = comment_field.value
+
         # attached images
         if im_col.controls:
             for i_row in im_col.controls:
@@ -113,7 +164,7 @@ def main(page: ft.Page):
             sbmt['photo'] = img.src_base64
             sbmt['photo1'] = img1.src_base64
         resp_task = requests.post(url + 'create_task', data=json.dumps(sbmt))
-        page.add(ft.Text(resp_task))
+        open_dlg(resp_task)
 
     file_picker = ft.FilePicker(on_result=on_dialog_result, on_upload=on_upload_progress)
     page.overlay.append(file_picker)
@@ -130,7 +181,7 @@ def main(page: ft.Page):
             drop_company.options.append(op)
 
     # Подразделение
-    drop_depart = ft.Dropdown(label='Подразделение')
+    drop_depart = ft.Dropdown(label='Подразделение', on_change=on_depart_change)
 
     # Тема
     drop_theme = ft.Dropdown(label='Тема обращения', on_change=on_theme_change)  # alignment=ft.alignment.center
@@ -142,7 +193,7 @@ def main(page: ft.Page):
                 drop_theme.options.append(op)
 
     # Уточнение
-    drop_subject = ft.Dropdown(label='Уточнение')
+    drop_subject = ft.Dropdown(label='Уточнение', on_change=on_subject_change)
 
     # Номер телефона
     phone_field = ft.TextField(label='Номер телефона', prefix_text='7', icon=ft.icons.PHONE, max_length=10, on_change=on_phone_change)
@@ -165,7 +216,7 @@ def main(page: ft.Page):
     # submit
     submit_button = ft.ElevatedButton("Создать заявку",
         on_click=on_submit, icon=ft.icons.CREATE)
-
+    
     page.add(cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button, im_row, im_col, submit_button)
 
 
