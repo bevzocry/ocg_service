@@ -13,7 +13,7 @@ def main(page: ft.Page):
     page.theme = ft.theme.Theme(color_scheme_seed='blue')
     page.scroll = ft.ScrollMode.ADAPTIVE
     
-    url = 'http://ws_guest:@192.168.10.123/workbase/hs/it/'
+    url = 'http://ws_guest:@192.168.220.251/service/hs/it/'
 
     try:
         resp = requests.get(url + 'get_company')
