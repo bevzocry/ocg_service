@@ -142,7 +142,12 @@ def main(page: ft.Page):
             return
         
         if phone_field.value:
-            sbmt['phone'] = phone_field.value
+            if len(phone_field.value) == 10:
+                sbmt['phone'] = phone_field.value
+            else:
+                phone_field.error_text = 'Неверный формат номера телефона'
+                page.update()
+                return
         else:
             phone_field.error_text = 'Не заполнен номер телефона'
             page.update()
