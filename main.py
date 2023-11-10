@@ -175,7 +175,8 @@ def main(page: ft.Page):
     page.overlay.append(file_picker)
 
     # Заголовок
-    cont_titl = ft.Row(controls=[ft.Text('Заявка в технический отдел', style=ft.TextThemeStyle.TITLE_LARGE)], alignment=ft.MainAxisAlignment.CENTER, height=50)
+    cont_titl = ft.Text('', height=20)
+    #cont_titl = ft.Row(controls=[ft.Text('Заявка в технический отдел', style=ft.TextThemeStyle.TITLE_LARGE)], alignment=ft.MainAxisAlignment.CENTER, height=20)
 
     # Компания
     drop_company = ft.Dropdown(label='Организация', on_change=on_company_change)  # alignment=ft.alignment.center
@@ -222,7 +223,26 @@ def main(page: ft.Page):
     submit_button = ft.ElevatedButton("Создать заявку",
         on_click=on_submit, icon=ft.icons.CREATE)
     
-    page.add(cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button, im_row, im_col, submit_button)
+    # Tabs
+    tabs = ft.Tabs(
+        selected_index = 0,
+        animation_duration = 300,
+        tabs=[
+            ft.Tab(
+                text="Новая заявка",
+                icon=ft.icons.POST_ADD_ROUNDED,
+                content=ft.Column([cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button, im_row, im_col, submit_button]),
+            ),
+            ft.Tab(
+                text="История заявок",
+                icon=ft.icons.HISTORY_ROUNDED,
+                content=ft.Text("This is Tab 2"),
+            ),
+        ],
+        expand=1,
+    )
+    
+    page.add(tabs)
 
 
 ft.app(target=main, upload_dir=uploads_dir, port=8080, view=ft.AppView.WEB_BROWSER)
