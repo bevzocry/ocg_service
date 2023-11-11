@@ -100,11 +100,19 @@ def main(page: ft.Page):
         page.update()
         
     def on_phone_change(e):
-        if not phone_field.value.isdigit():
-            phone_field.error_text = "Неверный формат номера телефона"
+        if not e.control.value.isdigit():
+            e.control.error_text = "Неверный формат номера телефона"
         else:
-            phone_field.error_text = ""
+            e.control.error_text = ""
         page.update()
+
+    def on_phone_submit(e):
+        if e.control == phone_field:
+            phone_field_order.value = e.control.value
+            phone_field_order.update()
+        else:
+            phone_field.value = e.control.value
+            phone_field.update()
 
     def open_dlg(resp):
         dlg.title = ft.Text(resp.json()['message'])
@@ -155,6 +163,11 @@ def main(page: ft.Page):
         
         sbmt['text'] = comment_field.value
 
+        # save values
+        page.client_storage.set('phone', phone_field.value)
+        page.client_storage.set('company', drop_company.value)
+        page.client_storage.set('department', drop_depart.value)
+
         # attached images
         if im_col.controls:
             for i_row in im_col.controls:
@@ -168,26 +181,31 @@ def main(page: ft.Page):
         else:
             sbmt['photo'] = img.src_base64
             sbmt['photo1'] = img1.src_base64
+
         resp_task = requests.post(url + 'create_task', data=json.dumps(sbmt))
         open_dlg(resp_task)
 
     file_picker = ft.FilePicker(on_result=on_dialog_result, on_upload=on_upload_progress)
     page.overlay.append(file_picker)
 
-    # Заголовок
+    # Title space
     cont_titl = ft.Text('', height=20)
     #cont_titl = ft.Row(controls=[ft.Text('Заявка в технический отдел', style=ft.TextThemeStyle.TITLE_LARGE)], alignment=ft.MainAxisAlignment.CENTER, height=20)
 
-    # Компания
+    # Company
     drop_company = ft.Dropdown(label='Организация', on_change=on_company_change)  # alignment=ft.alignment.center
     resp = requests.get(url + 'get_company')
     if resp.status_code == 200:
         for n in resp.json():
             op = ft.dropdown.Option(key=n['id'], text=n['name'])
             drop_company.options.append(op)
+    if page.client_storage.contains_key("company"):
+        drop_company.value = page.client_storage.get('company')
 
-    # Подразделение
+    # Department
     drop_depart = ft.Dropdown(label='Подразделение', on_change=on_depart_change)
+    if page.client_storage.contains_key("department"):
+        drop_depart.value = page.client_storage.get('department')
 
     # Тема
     drop_theme = ft.Dropdown(label='Тема обращения', on_change=on_theme_change)  # alignment=ft.alignment.center
@@ -202,7 +220,9 @@ def main(page: ft.Page):
     drop_subject = ft.Dropdown(label='Уточнение', on_change=on_subject_change)
 
     # Номер телефона
-    phone_field = ft.TextField(label='Номер телефона', prefix_text='7', icon=ft.icons.PHONE, max_length=10, on_change=on_phone_change)
+    phone_field = ft.TextField(label='Номер телефона', prefix_text='7', icon=ft.icons.PHONE, max_length=10, on_change=on_phone_change, on_submit=on_phone_submit)
+    if page.client_storage.contains_key("phone"):
+        phone_field.value = page.client_storage.get("phone")
 
     # Комментарий
     comment_field = ft.TextField(label='Комментарий', multiline=True, min_lines=1, max_lines=6)
@@ -223,6 +243,19 @@ def main(page: ft.Page):
     submit_button = ft.ElevatedButton("Создать заявку",
         on_click=on_submit, icon=ft.icons.CREATE)
     
+    # second tab
+    phone_field_order = ft.TextField(label='Номер телефона', prefix_text='7', icon=ft.icons.PHONE, max_length=10, on_change=on_phone_change, on_submit=on_phone_submit)
+    if page.client_storage.contains_key("phone"):
+        phone_field_order.value = page.client_storage.get("phone")
+
+    order_table = ft.DataTable(
+            columns=[
+                ft.DataColumn(ft.Text("Статус")),
+                ft.DataColumn(ft.Text("Дата, номер заявки")),
+                ft.DataColumn(ft.Text("Тема")),
+                ft.DataColumn(ft.Text("Комментарий")),
+            ])
+    
     # Tabs
     tabs = ft.Tabs(
         selected_index = 0,
@@ -236,7 +269,7 @@ def main(page: ft.Page):
             ft.Tab(
                 text="История заявок",
                 icon=ft.icons.HISTORY_ROUNDED,
-                content=ft.Text("This is Tab 2"),
+                content=ft.Column([cont_titl, phone_field_order, order_table]),
             ),
         ],
         expand=1,
