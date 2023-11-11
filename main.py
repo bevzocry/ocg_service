@@ -185,6 +185,39 @@ def main(page: ft.Page):
         resp_task = requests.post(url + 'create_task', data=json.dumps(sbmt))
         open_dlg(resp_task)
 
+    def get_orders():
+        if phone_field_order.value:
+            if len(phone_field_order.value) != 10:
+                phone_field_order.error_text = 'Неверный формат номера телефона'
+                phone_field_order.update()
+                return
+
+        order_table.rows.clear()
+        resp_ords = requests.get(url + 'get_orders?phone=' + phone_field_order.value)   
+        if resp_ords.status_code == 200:
+            for str_ord in resp_ords.json():
+                #print(str_ord)
+                if str_ord['status'] == 'Поступила' or str_ord['status'] == 'Приостановлена':
+                    status_icn = ft.icons.ACCESS_TIME_ROUNDED
+                elif str_ord['status'] == 'ВРаботе':
+                    status_icn = ft.icons.CONSTRUCTION_ROUNDED
+                elif str_ord['status'] == 'Завершена':
+                    status_icn = ft.icons.DONE_ROUNDED
+                elif str_ord['status'] == 'Отклонена':
+                    status_icn = ft.icons.DO_DISTURB_ALT_ROUNDED
+                order_table.rows.append(ft.DataRow(cells=[
+                        ft.DataCell(ft.Row([ft.Icon(name=status_icn), ft.Text(str_ord['status'])])),
+                        ft.DataCell(ft.Text(str_ord['date'].replace('T', ' ') + '\n' + str_ord['number'], text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Text(str_ord['subject_title'])),
+                        ft.DataCell(ft.Text(str_ord['employee'])),
+                        ft.DataCell(ft.Text(str_ord['comment'], width=350, max_lines=6)),
+                    ]))
+            order_table.update()
+
+    def on_tabs_change(e):
+        if tabs.selected_index == 1:
+            get_orders()
+
     file_picker = ft.FilePicker(on_result=on_dialog_result, on_upload=on_upload_progress)
     page.overlay.append(file_picker)
 
@@ -205,6 +238,7 @@ def main(page: ft.Page):
     # Department
     drop_depart = ft.Dropdown(label='Подразделение', on_change=on_depart_change)
     if page.client_storage.contains_key("department"):
+        drop_company.on_change('')
         drop_depart.value = page.client_storage.get('department')
 
     # Тема
@@ -244,17 +278,20 @@ def main(page: ft.Page):
         on_click=on_submit, icon=ft.icons.CREATE)
     
     # second tab
-    phone_field_order = ft.TextField(label='Номер телефона', prefix_text='7', icon=ft.icons.PHONE, max_length=10, on_change=on_phone_change, on_submit=on_phone_submit)
+    phone_field_order = ft.TextField(label='Номер телефона', prefix_text='7', icon=ft.icons.PHONE, max_length=10, on_change=on_phone_change, on_submit=on_phone_submit, height=70, width=300)
     if page.client_storage.contains_key("phone"):
         phone_field_order.value = page.client_storage.get("phone")
 
+    refresh = ft.TextButton(text='Обновить', icon=ft.icons.REFRESH_ROUNDED, on_click=on_tabs_change, height=50)
+
     order_table = ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("Статус")),
-                ft.DataColumn(ft.Text("Дата, номер заявки")),
-                ft.DataColumn(ft.Text("Тема")),
-                ft.DataColumn(ft.Text("Комментарий")),
-            ])
+                ft.DataColumn(ft.Text("Статус", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Дата, номер заявки", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Тема", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Исполнитель", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Комментарий", weight=ft.FontWeight.BOLD)),
+            ], column_spacing=25, data_row_max_height=75)
     
     # Tabs
     tabs = ft.Tabs(
@@ -269,13 +306,12 @@ def main(page: ft.Page):
             ft.Tab(
                 text="История заявок",
                 icon=ft.icons.HISTORY_ROUNDED,
-                content=ft.Column([cont_titl, phone_field_order, order_table]),
+                content=ft.Column([cont_titl, ft.Row([phone_field_order, refresh], vertical_alignment=ft.CrossAxisAlignment.START), order_table]),
             ),
         ],
-        expand=1,
+        expand=1, on_change=on_tabs_change
     )
     
     page.add(tabs)
-
 
 ft.app(target=main, upload_dir=uploads_dir, port=8080, view=ft.AppView.WEB_BROWSER)
