@@ -293,6 +293,17 @@ def main(page: ft.Page):
                 ft.DataColumn(ft.Text("Комментарий", weight=ft.FontWeight.BOLD)),
             ], column_spacing=25, data_row_max_height=75)
     
+    # for web chat
+    '''
+    wv = ft.WebView(
+        "https://flet.dev",
+        expand=True,
+        on_page_started=lambda _: print("Page started"),
+        on_page_ended=lambda _: print("Page ended"),
+        on_web_resource_error=lambda e: print("Page error:", e.data),
+    )
+    '''
+
     # Tabs
     tabs = ft.Tabs(
         selected_index = 0,
@@ -308,6 +319,11 @@ def main(page: ft.Page):
                 icon=ft.icons.HISTORY_ROUNDED,
                 content=ft.Column([cont_titl, ft.Row([phone_field_order, refresh], vertical_alignment=ft.CrossAxisAlignment.START), order_table]),
             ),
+            #ft.Tab(
+            #    text="Чат поддержки",
+            #    #icon=ft.icons.HISTORY_ROUNDED,
+            #    content=ft.Column([ft.Text('тестовая надпись'), wv]),
+            #),
         ],
         expand=1, on_change=on_tabs_change
     )
