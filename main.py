@@ -165,7 +165,7 @@ def main(page: ft.Page):
         # save values
         page.client_storage.set('phone', phone_field.value)
         page.client_storage.set('company', drop_company.value)
-        page.client_storage.set('department', drop_depart.value)
+        #page.client_storage.set('department', drop_depart.value)
 
         # attached images
         if im_col.controls:
@@ -244,9 +244,9 @@ def main(page: ft.Page):
 
     # Department
     drop_depart = ft.Dropdown(label='Подразделение', on_change=on_depart_change)
-    if page.client_storage.contains_key("department"):
-        drop_company.on_change('')
-        drop_depart.value = page.client_storage.get('department')
+    #if page.client_storage.contains_key("department"):
+    #    drop_company.on_change('')
+    #    drop_depart.value = page.client_storage.get('department')
 
     # Тема
     drop_theme = ft.Dropdown(label='Тема обращения', on_change=on_theme_change)  # alignment=ft.alignment.center
@@ -296,8 +296,6 @@ def main(page: ft.Page):
                 ft.DataColumn(ft.Text("Статус", weight=ft.FontWeight.BOLD)),
                 ft.DataColumn(ft.Text("Заявка", weight=ft.FontWeight.BOLD)),
                 ft.DataColumn(ft.Text("Тема", weight=ft.FontWeight.BOLD)),
-                #ft.DataColumn(ft.Text("Исполнитель", weight=ft.FontWeight.BOLD)),
-                #ft.DataColumn(ft.Text("Комментарий", weight=ft.FontWeight.BOLD)),
             ], column_spacing=25, data_row_max_height=75)
     
     # for web chat
