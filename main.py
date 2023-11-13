@@ -10,8 +10,7 @@ uploads_dir = "uploads"
 def main(page: ft.Page):
     prog_bars = {}
     page.title = 'Заявка в технический отдел OCG'
-    page.theme = ft.theme.Theme(color_scheme_seed='blue')
-    page.scroll = ft.ScrollMode.ADAPTIVE
+    page.theme = ft.Theme(color_scheme_seed='blue')
     
     url = 'http://ws_guest:@192.168.220.251/service/hs/it/'
 
@@ -312,12 +311,12 @@ def main(page: ft.Page):
             ft.Tab(
                 text="Новая заявка",
                 icon=ft.icons.POST_ADD_ROUNDED,
-                content=ft.Column([cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button, im_row, im_col, submit_button]),
+                content=ft.Column([cont_titl, drop_company, drop_depart, drop_theme, drop_subject, phone_field, comment_field, file_button, im_row, im_col, submit_button], scroll=ft.ScrollMode.AUTO),
             ),
             ft.Tab(
                 text="История заявок",
                 icon=ft.icons.HISTORY_ROUNDED,
-                content=ft.Column([cont_titl, ft.Row([phone_field_order, refresh], vertical_alignment=ft.CrossAxisAlignment.START), order_table]),
+                content=ft.Column([cont_titl, ft.Row([phone_field_order, refresh], vertical_alignment=ft.CrossAxisAlignment.START), order_table], scroll=ft.ScrollMode.AUTO),
             ),
             #ft.Tab(
             #    text="Чат поддержки",
