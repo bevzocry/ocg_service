@@ -10,7 +10,7 @@ uploads_dir = "uploads"
 def main(page: ft.Page):
     prog_bars = {}
     page.title = 'Заявка в технический отдел OCG'
-    page.theme = ft.Theme(color_scheme_seed='blue')
+    page.theme_mode = ft.ThemeMode.LIGHT
     
     url = 'http://ws_guest:@192.168.220.251/service/hs/it/'
 
@@ -184,6 +184,17 @@ def main(page: ft.Page):
         resp_task = requests.post(url + 'create_task', data=json.dumps(sbmt))
         open_dlg(resp_task)
 
+    def on_press_table_row(e):
+        title_dlg = ft.Column([
+            ft.Text('Заявка:', size=13, weight=ft.FontWeight.BOLD), ft.Text(e.control.data['date_number'], size=13),
+            ft.Text('Статус:', size=13, weight=ft.FontWeight.BOLD), ft.Text(e.control.data['status'], size=13),
+            ft.Text('Исполнитель:', size=13, weight=ft.FontWeight.BOLD), ft.Text(e.control.data['employee'], size=13),
+            ft.Text('Комментарий:', size=13, weight=ft.FontWeight.BOLD), ft.Text(e.control.data['comment'], size=13, width=300),
+        ])
+        dlg.title = title_dlg
+        dlg.open = True
+        page.update()
+
     def get_orders():
         if phone_field_order.value:
             if len(phone_field_order.value) != 10:
@@ -205,12 +216,10 @@ def main(page: ft.Page):
                 elif str_ord['status'] == 'Отклонена':
                     status_icn = ft.icons.DO_DISTURB_ALT_ROUNDED
                 order_table.rows.append(ft.DataRow(cells=[
-                        ft.DataCell(ft.Row([ft.Icon(name=status_icn), ft.Text(str_ord['status'])])),
-                        ft.DataCell(ft.Text(str_ord['date'].replace('T', ' ') + '\n' + str_ord['number'], text_align=ft.TextAlign.CENTER)),
+                        ft.DataCell(ft.Icon(name=status_icn)), # ft.Row([ft.Icon(name=status_icn), ft.Text(str_ord['status'])])
+                        ft.DataCell(ft.Text(str_ord['number'] + '\n' + str_ord['date'].replace('T', '\n'), text_align=ft.TextAlign.CENTER)),
                         ft.DataCell(ft.Text(str_ord['subject_title'])),
-                        ft.DataCell(ft.Text(str_ord['employee'])),
-                        ft.DataCell(ft.Text(str_ord['comment'], width=350, max_lines=6)),
-                    ]))
+                    ], data={'date_number': '№ ' + str_ord['number'] + ' от ' + str_ord['date'].replace('T', ' '), 'status': str_ord['status'], 'employee': str_ord['employee'], 'comment': str_ord['comment']}, on_long_press=on_press_table_row))
             order_table.update()
 
     def on_tabs_change(e):
@@ -222,7 +231,6 @@ def main(page: ft.Page):
 
     # Title space
     cont_titl = ft.Text('', height=20)
-    #cont_titl = ft.Row(controls=[ft.Text('Заявка в технический отдел', style=ft.TextThemeStyle.TITLE_LARGE)], alignment=ft.MainAxisAlignment.CENTER, height=20)
 
     # Company
     drop_company = ft.Dropdown(label='Организация', on_change=on_company_change)  # alignment=ft.alignment.center
@@ -286,10 +294,10 @@ def main(page: ft.Page):
     order_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text("Статус", weight=ft.FontWeight.BOLD)),
-                ft.DataColumn(ft.Text("Дата, номер заявки", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Заявка", weight=ft.FontWeight.BOLD)),
                 ft.DataColumn(ft.Text("Тема", weight=ft.FontWeight.BOLD)),
-                ft.DataColumn(ft.Text("Исполнитель", weight=ft.FontWeight.BOLD)),
-                ft.DataColumn(ft.Text("Комментарий", weight=ft.FontWeight.BOLD)),
+                #ft.DataColumn(ft.Text("Исполнитель", weight=ft.FontWeight.BOLD)),
+                #ft.DataColumn(ft.Text("Комментарий", weight=ft.FontWeight.BOLD)),
             ], column_spacing=25, data_row_max_height=75)
     
     # for web chat
